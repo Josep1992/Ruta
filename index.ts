@@ -16,10 +16,11 @@ const SERVICES = "services";
      * router subfolder level
      * router root level
   * file based error handler
-     * folder level or file level
-  * file based templates with React,(injectable react)
+     * router subfolder level
+     * router root level
   * Routes documentation based on file structure
   * create file-based-api cli
+  * * file based error handling 
 */
 
 const isDirectory= (p:string) => fs.lstatSync(p).isDirectory();
