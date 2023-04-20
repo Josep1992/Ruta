@@ -12,7 +12,7 @@ const SERVICES = "services";
 /*
   TODO
   * file based cron jobs
-  * [DONE] file based middleware ¿maybe?
+  * [DONE] file based middleware
      * router subfolder level
      * router root level
   * file based error handler
@@ -27,10 +27,11 @@ const isDirectory= (p:string) => fs.lstatSync(p).isDirectory();
 
 interface Route {
   path: string;
-  isDynamic: boolean;
+  hasDynamicSegments: boolean;
   RequestHandler: any;
   name: string;
-  base: string
+  base: string;
+  dynamicRouteSegments: Array<string>
 }
 
 function injectServices(directory:string){
@@ -130,13 +131,29 @@ function RegisterRoutes(directory:string, register: (p:Route) => void){
       const RequestHandler = path.join(process.cwd(), file);
       const _path = file.replace(/\[/g, ":").replace(/\]/g, "")
       .replace("routes","").replace(base,"");
-      const isDynamic =  _path.includes(":");
-      // TODO catch which segment is the dynamic one with regex groups
+
+      // get dynamic segments [<some name>]
+      let re = /\[(.*?)\]/g, match;
+      const dynamicRouteSegments = [];
+
+      while((match = re.exec(file)) !== null){
+        dynamicRouteSegments.push(match[1]);
+        continue;
+      }
+
+      const hasDynamicSegments = dynamicRouteSegments.length > 0;
 
       if(isDirectory(file)){
         RegisterRoutes(file,register);
       }else{
-        register({path: _path,RequestHandler,isDynamic,name,base});
+        register({
+          base, 
+          dynamicRouteSegments,
+          hasDynamicSegments,
+          name,
+          path: _path,
+          RequestHandler,
+        });
       }
     }
   })
@@ -168,7 +185,11 @@ RegisterRoutes(ROUTES, async function({...route}){
       await RequestHandler.default(
         req as Request, 
         res as Response,
-        {services} 
+        {
+          services, 
+          dynamicRouteSegments: route.dynamicRouteSegments, 
+          hasDynamicSegments: route.hasDynamicSegments
+        }
       );
     })
   }
