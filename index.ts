@@ -134,7 +134,7 @@ function RegisterRoutes(directory:string, register: (p:Route) => void){
 
       // get dynamic segments [<some name>]
       let re = /\[(.*?)\]/g, match;
-      const dynamicRouteSegments = [];
+      const dynamicRouteSegments = []; // convert to a new Map()
 
       while((match = re.exec(file)) !== null){
         dynamicRouteSegments.push(match[1]);
@@ -146,11 +146,24 @@ function RegisterRoutes(directory:string, register: (p:Route) => void){
       if(isDirectory(file)){
         RegisterRoutes(file,register);
       }else{
+        // allows for overriding the filename to any of the supported http methods
+        // this give the ability of naming the without the http verbs convention
+        // !Adding /<some regex></some>/gi makes the regex stateful and it won't match the catch groups we are looking for
+        const re = /"use *?(?<http>delete|post|put|get|options|patch)"/i;
+        const content = fs.readFileSync(file,"utf-8").trim();
+        const m = content.match(re);
+        // TODO add validation to http and name
+        const {http} = m?.groups || {};
+
+        // TODO for validation
+        // * if we have a custom name but not the use <http verb> we should trow a error
+        // * and log it the console
+
         register({
           base, 
           dynamicRouteSegments,
           hasDynamicSegments,
-          name,
+          name: (http || name).toLowerCase(),
           path: _path,
           RequestHandler,
         });
