@@ -55,8 +55,6 @@ function injectServices(directory:string){
           const isFunction: Boolean = typeof ServiceHandler.default === "function";
           if(!ServiceHandler.default && isFunction) return;
 
-          console.log(ServiceHandler)
-
           if(!(name in services)){
             // TODO handle names exports
             // Only register named exports and user the file name as the service namespace
@@ -137,11 +135,20 @@ function RegisterRoutes(directory:string, register: (p:Route) => void){
       const dynamicRouteSegments = []; // convert to a new Map()
 
       while((match = re.exec(file)) !== null){
+        // console.log(match)
         dynamicRouteSegments.push(match[1]);
         continue;
       }
 
       const hasDynamicSegments = dynamicRouteSegments.length > 0;
+
+      // TODO @log on process.env.NODE_ENV === "development"
+      console.log(
+        "@route ➡️  %s %s dynamic segments %s",
+        _path,
+        hasDynamicSegments ? "has" : "does not have",
+        dynamicRouteSegments
+        )
 
       if(isDirectory(file)){
         RegisterRoutes(file,register);
@@ -207,6 +214,10 @@ RegisterRoutes(ROUTES, async function({...route}){
     })
   }
 });
+
+// TODO research error handling
+// https://www.npmjs.com/package/express-async-handler
+// Error middleware will go here
 
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
