@@ -158,9 +158,14 @@ function RegisterRoutes(directory:string, register: (p:Route) => void){
         // !Adding /<some regex></some>/gi makes the regex stateful and it won't match the catch groups we are looking for
         const re = /"use *?(?<http>delete|post|put|get|options|patch)"/i;
         const content = fs.readFileSync(file,"utf-8").trim();
+        // TODO do we want to read each line to see if the first one has one of the directives 
+        // const chunks = content.split("\n");
+        
         const m = content.match(re);
         // TODO add validation to http and name
         const {http} = m?.groups || {};
+
+        if(http) console.log("@found ➡️ HTTP directive, route will use %s method",http?.toUpperCase())
 
         // TODO for validation
         // * if we have a custom name but not the use <http verb> we should trow a error
@@ -191,7 +196,7 @@ app.use(express.json());
 middleware(ROUTES,app);
 
 
-RegisterRoutes(ROUTES, async function({...route}){
+RegisterRoutes(ROUTES, async function({...route}: Route){
   const RequestHandler = await import(route.RequestHandler);
   const services = injectServices(SERVICES);
 
