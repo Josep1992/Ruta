@@ -158,10 +158,9 @@ function RegisterRoutes(directory:string, register: (p:Route) => void){
         // !Adding /<some regex></some>/gi makes the regex stateful and it won't match the catch groups we are looking for
         const re = /"use *?(?<http>delete|post|put|get|options|patch)"/i;
         const content = fs.readFileSync(file,"utf-8").trim();
-        // TODO do we want to read each line to see if the first one has one of the directives 
-        // const chunks = content.split("\n");
+        const lines: string[] = content.split("\n").filter(Boolean);
         
-        const m = content.match(re);
+        const m = lines[0].match(re);
         // TODO add validation to http and name
         const {http} = m?.groups || {};
 
