@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 
-export default function(req:Request,res:Response,{services}){
-    console.log(services.user.getAll())
+// Todo type deps correctly
+export default function(req:Request,res:Response,dependecies:any){
+    console.log(dependecies.services.user.getAll())
     return res.json({message: "from users:/id"})
 }
