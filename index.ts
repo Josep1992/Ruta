@@ -25,10 +25,20 @@ const SERVICES = "services";
 
 const isDirectory= (p:string) => fs.lstatSync(p).isDirectory();
 
+interface Injectable {
+  hasDynamicSegments: boolean,
+  dynamicRouteSegments: Array<string>
+  services: any
+}
+
+interface RequestHandler {
+  default: (req:Request,res:Response,dependecies:Injectable) => void
+} 
+
 interface Route {
   path: string;
   hasDynamicSegments: boolean;
-  RequestHandler: any;
+  RequestHandler: string;
   name: string;
   base: string;
   dynamicRouteSegments: Array<string>
@@ -196,7 +206,7 @@ middleware(ROUTES,app);
 
 
 RegisterRoutes(ROUTES, async function({...route}: Route){
-  const RequestHandler = await import(route.RequestHandler);
+  const RequestHandler = await import(route.RequestHandler) as RequestHandler;
   const services = injectServices(SERVICES);
 
   if(route.name in app){
@@ -214,7 +224,7 @@ RegisterRoutes(ROUTES, async function({...route}: Route){
           dynamicRouteSegments: route.dynamicRouteSegments, 
           hasDynamicSegments: route.hasDynamicSegments
         }
-      );
+      ) ;
     })
   }
 });
